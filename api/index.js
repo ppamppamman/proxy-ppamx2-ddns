@@ -1,5 +1,6 @@
 const express = require("express");
 const axios = require("axios");
+const proxy = require("express-http-proxy");
 require("dotenv").config();
 
 const {
@@ -23,6 +24,22 @@ router.get("/item/:slug", (req, res) => {
   res.end(`Item: ${slug}`);
 });
 
+router.use(
+  "/wol2",
+  proxy(
+    `${IPTIME_DDNS}:${PORT_FOR_ACCESS}/cgi-bin/wol_apply.cgi?act=wakeup&mac=${IPTIME_MAC}`,
+    {
+      proxyReqOptDecorator: function (proxyReqOpts, srcReq) {
+        // you can update headers
+        proxyReqOpts.headers["Authorization"] = `Basic ${IPTIME_TOKEN}`;
+        // you can change the method
+        proxyReqOpts.method = "GET";
+        return proxyReqOpts;
+      },
+    }
+  )
+);
+
 router.get("/wol", async (req, res) => {
   try {
     const result = await axios.get(
@@ -35,7 +52,7 @@ router.get("/wol", async (req, res) => {
     );
     res.end(`api/wol success`);
   } catch (e) {
-    res.status(500).send("api/wol error");
+    res.status(500).send(`api/wol error ${JSON.stringify(e)}`);
   }
 });
 
