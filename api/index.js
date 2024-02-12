@@ -28,6 +28,7 @@ router.use(
   "/wol2",
   proxy(`${IPTIME_DDNS}:${PORT_FOR_ACCESS}/cgi-bin/wol_apply.cgi`, {
     proxyReqPathResolver: function (req) {
+      console.log(req.url + `?act=wakeup&mac=${IPTIME_MAC}`);
       return req.url + `?act=wakeup&mac=${IPTIME_MAC}`;
     },
     proxyReqOptDecorator: function (proxyReqOpts, srcReq) {
@@ -35,6 +36,11 @@ router.use(
       proxyReqOpts.headers["Authorization"] = `Basic ${IPTIME_TOKEN}`;
       // you can change the method
       proxyReqOpts.method = "GET";
+      proxyReqOpts.params = {
+        act: "wakeup",
+        mac: IPTIME_MAC,
+      };
+      console.log(proxyReqOpts);
       return proxyReqOpts;
     },
   })
