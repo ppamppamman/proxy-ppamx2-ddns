@@ -28,7 +28,7 @@ router.use(
   "/wol2",
   proxy(`${IPTIME_DDNS}:${PORT_FOR_ACCESS}/cgi-bin/wol_apply.cgi`, {
     proxyReqPathResolver: function (req) {
-      return req.url + "?act=wakeup&mac=${IPTIME_MAC}";
+      return req.url + `?act=wakeup&mac=${IPTIME_MAC}`;
     },
     proxyReqOptDecorator: function (proxyReqOpts, srcReq) {
       // you can update headers
