@@ -1,6 +1,10 @@
-const app = require("./app");
+const app = require("express")();
+const api = require("./api");
+require("dotenv").config();
 
-const port = process.env.PORT || 5000;
+app.use("/api", api);
+
+const port = process.env.PORT || 3333;
 app.listen(port, () => {
   console.log(`Listening: http://localhost:${port}`);
 });
