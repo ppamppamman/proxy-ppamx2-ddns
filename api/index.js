@@ -36,10 +36,7 @@ router.use(
       proxyReqOpts.headers["Authorization"] = `Basic ${IPTIME_TOKEN}`;
       // you can change the method
       proxyReqOpts.method = "GET";
-      proxyReqOpts.params = {
-        act: "wakeup",
-        mac: IPTIME_MAC,
-      };
+      proxyReqOpts.path = proxyReqOpts.path + `?act=wakeup&mac=${IPTIME_MAC}`;
       console.log(proxyReqOpts);
       return proxyReqOpts;
     },
