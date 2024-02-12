@@ -1,5 +1,6 @@
 const express = require("express");
-const proxy = require("express-http-proxy");
+const axios = require("axios");
+require("dotenv").config();
 
 const {
   IPTIME_DDNS,
@@ -22,23 +23,29 @@ router.get("/item/:slug", (req, res) => {
   res.end(`Item: ${slug}`);
 });
 
-router.get("/wol", (req, res) => {
-  proxy(
-    `${IPTIME_DDNS}:${PORT_FOR_ACCESS}/cgi-bin/wol_apply.cgi?act=wakeup&mac=${IPTIME_MAC}`,
-    {
-      proxyReqOptDecorator: (proxyReqOpts, srcReq) => {
-        // you can update headers
-        proxyReqOpts.headers["Authorization"] = `Basic ${IPTIME_TOKEN}`;
-        return proxyReqOpts;
-      },
-    }
-  );
-  res.end(`api/wol success`);
+router.get("/wol", async (req, res) => {
+  try {
+    const result = await axios.get(
+      `${IPTIME_DDNS}:${PORT_FOR_ACCESS}/cgi-bin/wol_apply.cgi?act=wakeup&mac=${IPTIME_MAC}`,
+      {
+        headers: {
+          Authorization: `Basic ${IPTIME_TOKEN}`,
+        },
+      }
+    );
+    res.end(`api/wol success`);
+  } catch (e) {
+    res.status(500).send("api/wol error");
+  }
 });
 
-router.get("/sleep", (req, res) => {
-  proxy(`${IPTIME_DDNS}:${PORT_FOR_SLEEP}/`);
-  res.end(`api/sleep success`);
+router.get("/sleep", async (req, res) => {
+  try {
+    await axios.get(`${IPTIME_DDNS}:${PORT_FOR_SLEEP}/`);
+    res.end(`api/sleep success`);
+  } catch (e) {
+    res.status(500).send("api/sleep error");
+  }
 });
 
 module.exports = router;
