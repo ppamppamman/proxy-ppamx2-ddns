@@ -10,9 +10,6 @@ app.use(
   "/wol3",
   proxy(`${IPTIME_DDNS}:${PORT_FOR_ACCESS}/`, {
     proxyReqPathResolver: function (req) {
-      console.log(
-        req.url + `cgi-bin/wol_apply.cgi?act=wakeup&mac=${IPTIME_MAC}`
-      );
       return req.url + `cgi-bin/wol_apply.cgi?act=wakeup&mac=${IPTIME_MAC}`;
     },
     proxyReqOptDecorator: function (proxyReqOpts, srcReq) {
@@ -21,8 +18,10 @@ app.use(
       // you can change the method
       proxyReqOpts.method = "GET";
       proxyReqOpts.path = proxyReqOpts.path + `?act=wakeup&mac=${IPTIME_MAC}`;
-      console.log(proxyReqOpts);
       return proxyReqOpts;
+    },
+    proxyErrorHandler: function (err, res) {
+      console.log(err, res);
     },
   })
 );
