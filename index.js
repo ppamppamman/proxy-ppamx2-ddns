@@ -1,30 +1,30 @@
 const app = require("express")();
 const api = require("./api");
-const proxy = require("express-http-proxy");
 
 const { IPTIME_DDNS, IPTIME_TOKEN, IPTIME_MAC, PORT_FOR_ACCESS } = process.env;
 
+const httpProxy = require("http-proxy");
+const proxy = httpProxy.createProxyServer({});
+
+proxy.on("proxyReq", function (proxyReq, req, res, options) {
+  proxyReq.setHeader("Authorization", `Basic ${IPTIME_TOKEN}`);
+});
+
 app.use("/api", api);
 
-app.use(
-  "/wol3",
-  proxy(`${IPTIME_DDNS}:${PORT_FOR_ACCESS}/`, {
-    proxyReqPathResolver: function (req) {
-      return req.url + `cgi-bin/wol_apply.cgi?act=wakeup&mac=${IPTIME_MAC}`;
+// proxyReqPathResolver: function (req) {
+//       return req.url + `cgi-bin/wol_apply.cgi?act=wakeup&mac=${IPTIME_MAC}`;
+//     },
+
+app.get("/wol3/*", (req, res) => {
+  proxy.web(req, res, {
+    target: `${IPTIME_DDNS}:${PORT_FOR_ACCESS}/`,
+    query: {
+      act: "wakeup",
+      mac: IPTIME_MAC,
     },
-    proxyReqOptDecorator: function (proxyReqOpts, srcReq) {
-      // you can update headers
-      proxyReqOpts.headers["Authorization"] = `Basic ${IPTIME_TOKEN}`;
-      // you can change the method
-      proxyReqOpts.method = "GET";
-      proxyReqOpts.path = proxyReqOpts.path + `?act=wakeup&mac=${IPTIME_MAC}`;
-      return proxyReqOpts;
-    },
-    proxyErrorHandler: function (err, res) {
-      console.log(err, res);
-    },
-  })
-);
+  });
+});
 
 const port = process.env.PORT || 3333;
 app.listen(port, () => {
